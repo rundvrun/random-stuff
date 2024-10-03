@@ -5,7 +5,7 @@ SERVICE_PORT = 8000
 SERVICE_HOST = '::1'
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_address = ('localhost', 8001)
+server_address = ('localhost', PROXY_PORT)
 sock.bind(server_address)
 sock.listen(1)
 

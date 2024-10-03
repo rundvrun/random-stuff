@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="view-transition" content="same-origin" />
+	<link rel="stylesheet" href="style.css">
+        <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+	<script src="https://cdn.jsdelivr.net/npm/lozad/dist/lozad.min.js"></script>
+	<script src="main.js"></script>
+	<script>htmx.config.globalViewTransitions = true</script>
+	<title>Memory English Game</title>
+</head>
+<style>
+@view-transition {  
+	navigation: auto;
+}
+.blocks-container{
+	display: grid;
+	grid-template-columns: repeat(10, 1fr);
+	/*grid-template-rows: repeat(6, 1fr);*/
+	gap: 10px;
+	max-width: 98%;
+	margin: 10px auto;
+}
+</style>
+<body hx-boost="true">
+	<h1 class="head">Memory English Game</h1>
+	<div class="info">
+		<div class="name">
+			# of words: <span ><input name='size' min="1" max="30" value="10" type="number" /></span>
+		</div>
+                <button hx-get="/generate" hx-include="[name='size']" hx-target="#blocks-container" hx-swap="innerHTML show:window:bottom">Replay</button>
+		<div class="tries">Misses: <span>0</span></div>
+		<div class="speed-container">
+			<label for="speed">Speed:</label>
+			<select name="speed" id="speed">
+				<option value="1000">Fast</option>
+				<option value="2000" selected>Normal</option>
+				<option value="4000">Slow</option>
+			</select>
+		</div>
+		<div class="accuracy-container">Accuracy: <span class="accuracy">0</span>%</div>  
+	</div>
+	<div class="blocks-container" id="blocks-container" hx-on::after-swap="start()"></div>
+	<div id="splashScreen">Win!</div>
+	<audio id="true" src="audios/mixkit-achievement-bell-600.wav" preload="auto"></audio>
+	<audio id="false" src="audios/mixkit-failure-arcade-alert-notification-240.wav" preload="auto"></audio>
+</body>
+</html>
+
+
+function start() {
+let name = 'Admin';
+let success = document.getElementById('true');
+let fail = document.getElementById('false');
+let duration = 2000;
+
+const speed = document.getElementById('speed');
+speed.addEventListener('change', () => duration = +speed.options[speed.selectedIndex].value);
+
+function speak(w) {
+  const utterance = new SpeechSynthesisUtterance(w);
+  utterance.voice = speechSynthesis.getVoices()[2];
+  speechSynthesis.speak(utterance);
+}
+speak(' ')
+
+// Get references to the parent container and its child blocks
+const blocks = [...document.querySelector('.blocks-container').children]
+let win = document.getElementById('splashScreen');
+const observer = lozad();
+observer.observe();
+let flipped, counter = 0, misses = 0;
+blocks.forEach(block => block.addEventListener('click', function (){
+	block.classList.add('flip');
+	let n = block.getAttribute('data');
+	speak(n);
+	if (flipped){
+		
+		counter++;
+		blocks.forEach(block => block.classList.add('banned'));
+			
+		
+		if (n !== flipped.getAttribute('data')){
+			setTimeout(function (){
+				flipped.classList.remove('flip');
+				block.classList.remove('flip');
+				blocks.forEach(block => block.classList.remove('banned'));
+				flipped = undefined;
+			}, duration);
+
+			document.querySelector('.tries span').textContent = ++misses;
+			//fail.play();
+		}
+		else{
+			flipped.classList.add('success');
+			block.classList.add('success');
+			blocks.forEach(block => block.classList.remove('banned'));
+			flipped = undefined;
+                        //speak(n);
+			//success.play();
+		}
+		document.querySelector('.accuracy').textContent = Math.round((counter - misses) / counter * 100);
+
+		if (document.querySelectorAll('.block.success').length === document.querySelectorAll('.block').length){
+			win.style.display = 'block';
+			setTimeout(function(){
+				win.style.display = 'none';
+			}, 2000);
+		}
+		
+	}
+	else{
+		flipped = block;
+		flipped.classList.add('banned');	
+	}
+}));
+}
+
+*{
+	box-sizing: border-box;
+}
+body{
+	font-family: Arial, Helvetica, sans-serif;
+}
+input:focus{
+	outline: none;
+}
+input{
+	border: none;
+}
+@media only screen and (max-width: 720px) {
+	body {
+		zoom: 70%;
+	}
+}
+@media only screen and (max-width: 525px) {
+	body {
+		zoom: 60%;
+	}
+}
+@media only screen and (max-width: 445px) {
+	body {
+		zoom: 50%;
+	}
+}
+@media only screen and (max-width: 360px) {
+	body {
+		zoom: 40%;
+	}
+}
+@media only screen and (max-width: 300px) {
+	body {
+		zoom: 30%;
+	}
+}
+.splash{
+	position: fixed;
+	background-color: rgba(21, 106, 176, 0.594);
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	color: white;
+}
+.splash input[type="submit"] {
+	background-color: rgb(27, 124, 203);
+	color: white;
+	padding: 12px 6px;
+	border-radius: 10px;
+	width: 100px;
+	cursor: pointer;
+	font-size: 20px;
+}
+.head{
+	text-align: center;
+	text-decoration-line: underline;
+	font-size: 32px;
+	color: #2195F3;
+}
+
+
+.blocks-container .block{
+	transform-style: preserve-3d;
+	height: 150px;
+	position: relative;
+	cursor: pointer;
+	transition: transform 0.5s;
+}
+
+.blocks-container .block .back{
+	transform: rotateY(180deg);
+	background-color: rgb(241 253 251);
+}
+.blocks-container .block .back img{
+	width: 100%;
+	height: 100%;
+}
+.blocks-container .block .front{
+	background-color: #d9baba;
+	line-height: 150px;
+}
+.blocks-container .block .front::before{
+	content: '?';
+	font-size: 80px;
+	font-weight: bold;	
+	color: white;
+}
+.blocks-container .block .face{
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	backface-visibility: hidden;
+	text-align: center;
+}
+
+.blocks-container .block .back.face {
+	border:5px solid #2195F3;
+}
+
+.blocks-container .block .front.face {
+	border:5px solid #b11e79;
+}
+
+.blocks-container .block .face h1 {
+	word-break: break-word;
+}
+
+.blocks-container .block.flip{
+	transform: rotateY(180deg);
+}
+.blocks-container .block.banned,
+.blocks-container .block.success{
+	pointer-events: none;
+	cursor: none;
+}
+
+.info{
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	max-width: 95%;
+	margin: 20px auto 0;
+	background-color: #f6f6f6;
+	padding: 20px;
+	border:2px solid #2195F3;
+	font-size: 24px;
+	flex-wrap: wrap;
+}
+.info div{
+	padding: 10px;
+	border: 1px solid #2195F3;
+	margin: 5px;	
+}
+#speed{
+	font-size: 24px;
+	width: 110px;
+	height: 36px;
+	border: 2px solid rgb(33, 149, 243);
+}
+#speed option{
+	display: block;
+	padding-right: 4px;
+}
+
+
+
+
+#splashScreen {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	font-size: 100px;
+	text-decoration-line: underline;
+	background-color: rgba(33, 149, 243, 0.7);
+	color: white;
+	text-align: center;
+	padding-top: 20%;
+	animation: fade_in_show 1s;
+}
+
+@keyframes fade_in_show {
+	0% {
+		opacity: 0;
+		transform: scale(0)
+	}
+
+	100% {
+		opacity: 1;
+		transform: scale(1)
+	}
+}
+
+from http.server import SimpleHTTPRequestHandler, HTTPServer, test
+import glob, random
+from urllib.parse import urlparse, parse_qs
+
+class Server(SimpleHTTPRequestHandler):
+    css_named_colors = ["aliceblue", "antiquewhite", "aqua", "aquamarine", "azure", "beige", "bisque", "black", "blanchedalmond", "blue", "blueviolet", "brown", "burlywood", "cadetblue", "chartreuse", "chocolate", "coral", "cornflowerblue", "cornsilk", "crimson", "cyan", "darkblue", "darkcyan", "darkgoldenrod", "darkgray", "darkgreen", "darkkhaki", "darkmagenta", "darkolivegreen", "darkorange", "darkorchid", "darkred", "darksalmon", "darkseagreen", "darkslateblue", "darkslategray", "darkturquoise", "darkviolet", "deeppink", "deepskyblue", "dimgray", "dodgerblue", "firebrick", "forestgreen", "fuchsia", "gainsboro", "gold", "goldenrod", "gray", "green", "greenyellow", "honeydew", "hotpink", "indianred", "indigo", "ivory", "khaki", "lavender", "lavenderblush", "lawngreen", "lemonchiffon", "lightblue", "lightcoral", "lightcyan", "lightgoldenrodyellow", "lightgray", "lightgreen", "lightpink", "lightsalmon", "lightseagreen", "lightskyblue", "lightslategray", "lightsteelblue", "lightyellow", "lime", "limegreen", "linen", "magenta", "maroon", "mediumaquamarine", "mediumblue", "mediumorchid", "mediumpurple", "mediumseagreen", "mediumslateblue", "mediumspringgreen", "mediumturquoise", "mediumvioletred", "midnightblue", "mintcream", "mistyrose", "moccasin", "navy", "oldlace", "olive", "olivedrab", "orange", "orangered", "orchid", "palegoldenrod", "palegreen", "paleturquoise", "palevioletred", "papayawhip", "peachpuff", "peru", "pink", "plum", "powderblue", "purple", "rebeccapurple", "red", "rosybrown", "royalblue", "saddlebrown", "salmon", "sandybrown", "seagreen", "seashell", "sienna", "silver", "skyblue", "slateblue", "slategray", "snow", "springgreen", "steelblue", "tan", "teal", "thistle", "tomato", "turquoise", "violet", "wheat", "yellow", "yellowgreen"]
+    block_template = '''
+    <div class="block" data="%word%">
+	<div class="front face"></div>
+		<div class="back face" style="border-color: %border%">
+			%back%
+		</div>
+	</div>
+    '''
+    img = '<img class="lozad" data-src="englishpic/%word%.jpg" alt="%word%" loading="lazy">'
+    title = '<h1>%word%</h1>'
+    words = glob.glob('englishpic/*.jpg')
+    
+    def generate_card(self, w):
+        w = w.replace('.jpg', '').replace('englishpic\\', '')
+        if (b := list(set(Server.css_named_colors) - set(self.borders))): border = random.choice(b)
+        else: border = random.choice(Server.css_named_colors)
+        self.borders.append(border)
+        return [Server.block_template.replace('%back%', Server.img).replace('%word%', w).replace('%border%', border), Server.block_template.replace('%back%', Server.title).replace('%word%', w).replace('%border%', border)]
+
+    def do_GET(self):
+        url = urlparse(self.path)
+        if url.path == '/generate':
+            self.send_response(200)
+            self.end_headers()
+            param = parse_qs(url.query)
+            self.borders = []
+            try: size = min(max(int(param.get('size')[0]), 1), 30)
+            except: size = 10
+            cards = [w for _ in map(self.generate_card, random.sample(Server.words, size)) for w in _]
+            random.shuffle(cards)
+            self.wfile.write("".join(cards).encode('utf-8'))
+        else: super().do_GET()
+
+test(Server, HTTPServer, port=8000)
+

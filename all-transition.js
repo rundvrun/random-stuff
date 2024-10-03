@@ -4,6 +4,7 @@
 // @version      2024-05-21
 // @description  try to take over the world!
 // @author       You
+// @run-at        document-start
 // @match        *://*/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=stackoverflow.com
 // @grant GM_xmlhttpRequest
@@ -13,5 +14,5 @@
 (function() {
     'use strict';
     // Your code here...
-    document.head.insertAdjacentHTML('beforeend', '<meta name="view-transition" content="same-origin">');
+    document.head.insertAdjacentHTML('beforeend', '<link rel="icon" href="data:,"><meta name="view-transition" content="same-origin">');
 })();

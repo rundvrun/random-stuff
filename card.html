@@ -1,0 +1,221 @@
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js" defer></script>
+<script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="./fetch-img.js"></script>
+
+<style>
+.is-offscreen--r {
+  transform: translate(2000px, 0px) rotateZ(-20deg) !important;
+}
+
+.is-offscreen--l, .is-offscreen--l.is-offscreen--u {
+  transform: translate(-2000px, 0px) rotateZ(-20deg) !important;
+}
+
+.is-offscreen--u {
+  transform: translate(0px, -1800px) rotateZ(-20deg) !important;
+}
+
+body, html {
+  height: 100%;
+}
+
+body {
+  width: 300px;
+  margin-top: 50px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.deck {
+  position: relative;
+  width: auto;
+  height: auto;
+}
+
+.card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 300px;
+  height: 400px;
+  background-color: transparent;
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.5);
+  transform-style: preserve-3d;
+  transition: 0.8s ease-in-out;
+}
+
+.card img {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+
+.card .card__front--back {
+  transform: rotateY(0.5turn);
+}
+
+.card .card__front {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
+  transition: 1s cubic-bezier(0, 0, 0, 2.57);
+}
+
+.card.flipped {
+  transform: rotateY(0.5turn);
+}
+
+#info {
+	position: relative;
+	top: 410px;
+	visibility: hidden;
+}
+
+#info.flipped {
+	visibility: visible;
+}
+
+.rare-card:after {
+    content: "";
+    position: absolute;
+    top: 0%;
+    color: white;
+    left: 0%;
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+    background-image: url("https://assets.codepen.io/13471/sparkles.gif"), url(https://poke-holo.simey.me/img/cosmos-middle-trans.png), linear-gradient(125deg, #ff008450 15%, #fca40040 30%, #ffff0030 40%, #00ff8a20 60%, #00cfff40 70%, #cc4cfa50 85%);
+  background-size: 160%;
+    mix-blend-mode: color-dodge;
+}
+
+.rare-card img {
+	filter: drop-shadow(0 0 0.75rem rgb(255, 217, 0));
+}
+</style>
+
+
+<body x-data="{ info: { money: 14, cards: [] } }">
+	<button x-show="info.cards.length == 0" x-on:click="initCards($event, info, 'decks')">Get</button>
+	<button x-show="info.cards.length == 0" x-on:click="initCards($event, info, 'decks-yugi')">Get Yugi</button>
+	Money: $<span x-text="info.money"></span>
+	<div class='deck' x-on:click="update($event, info)"></div>
+	<div id="info">
+		Price: $<span x-text="info.price"></span><br/>
+		Name: <span x-text="info.name"></span><br/>
+		Type: <span x-text="info.supertype"></span><br/>
+		Rarity: <span x-text="info.rarity"></span><br/>
+		HP: <span x-text="info.hp"></span><br/>
+	</div>
+</body>
+
+<script>
+const options = {
+  method: 'GET',
+  headers: {
+    'X-Src': ''
+  },
+  cache: 'no-store',
+  mode: 'cors'
+}
+
+function fetchImageToBlob(src) {
+	options.headers['X-Src'] = src;
+	return fetch('http://localhost:8000/proxy', options)
+	.then(response => response.blob())
+	.then(b => Object({ url: src, blob: b }));
+}
+
+function update(e, info) {
+    e.preventDefault();
+    e.stopPropagation();
+    //console.log(info);
+    clickCard(info);
+}
+var $deck = $(".deck");
+var $card = $("<div>", {
+    html:
+      '<div class="card is-offscreen--l is-offscreen--u">' +
+      '<div class="card__front"><img src="https://i.pinimg.com/originals/37/17/24/3717242635eb3336ec720d5454b647c8.png"/></div><div class="card__front card__front--back rare-card"><img src="" alt="Loading..."/></div>'
+  }).children(1);
+$deck.append($card);
+
+const delay = ms => new Promise(res => setTimeout(res, ms));
+
+async function fetchData(deck) {
+	//let d = [{"name": "Water Energy", "price": "0.28", "id": "base1-102", "rarity": "Common", "setCode": "base1"}, {"name": "Fighting Energy", "price": "0.32", "id": "base1-97", "rarity": "Common", "setCode": "base1"}, {"name": "Poliwag", "price": "0.63", "id": "base1-59", "rarity": "Common", "setCode": "base1"}, {"name": "Sandshrew", "price": "0.63", "id": "base1-62", "rarity": "Common", "setCode": "base1"}, {"name": "Squirtle", "price": "1.73", "id": "base1-63", "rarity": "Common", "setCode": "base1"}, {"name": "Staryu", "price": "0.35", "id": "base1-65", "rarity": "Common", "setCode": "base1"}, {"name": "Machop", "price": "0.33", "id": "base1-52", "rarity": "Common", "setCode": "base1"}, {"name": "Energy Retrieval", "price": "0.55", "id": "base1-81", "rarity": "Uncommon", "setCode": "base1"}, {"name": "Super Potion", "price": "0.23", "id": "base1-90", "rarity": "Uncommon", "setCode": "base1"}, {"name": "Full Heal", "price": "0.66", "id": "base1-82", "rarity": "Uncommon", "setCode": "base1"}, {"name": "Pidgeotto", "price": "6.35", "id": "base1-22", "rarity": "Rare", "setCode": "base1"}];
+	let d = await fetch(`http://localhost:8000/${deck}`).then(t => t.json());
+	return d;
+}
+
+/*$deck.on("click", function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    clickCard();
+});*/
+
+function addCard() {
+	if ($cards.length == 0) return;
+	$card.removeClass("flipped");
+	$card[0].querySelector('.card__front--back img').src = '';
+	window.setTimeout(function () {
+		$card.removeClass("is-offscreen--u");
+		$card.removeClass("is-offscreen--l");
+  	}, 20);
+}
+
+function removeCard() {
+	$('#info').removeClass('flipped');
+	$card.addClass("is-offscreen--u");
+	window.setTimeout(function () {
+		$card.addClass("is-offscreen--l");
+	}, 550);
+	window.setTimeout(function () {
+		addCard();
+	}, 1200);
+}
+
+async function clickCard(info) {
+	if ($card.hasClass('flipped')) removeCard();
+	else {
+		const d = info.cards.pop();
+		//$card[0].querySelector(".card__front--back img").src = d.src;
+                $card[0].querySelector(".card__front--back img").dataset.xSrc = d.src;
+		await fetchImgOnLoad(false);
+		info.name = d.name;
+		info.price = d.price;
+		info.money += Number(d.price);
+		info.money = Number(info.money.toFixed(2));
+		info.rarity = d.rarity;
+		info.hp = d.hp || 0;
+		info.supertype = d.supertype || d.type || 'Unknown';
+		$card.addClass("flipped");
+		$('#info').addClass('flipped');
+	}
+}
+
+var $cards = [];
+async function initCards(e, info, deck='decks') {
+	[...document.querySelectorAll('button')].forEach(b => b.disabled = true);
+	removeCard();
+	info.cards = [];
+	$cards = await fetchData(deck);
+	info.cards.push(...$cards);
+	$cards = info.cards;
+	info.money -= 13.5;
+	info.money = Number(info.money.toFixed(2));
+	$i = 0;
+	for (const x of info.cards) {
+		await saveImageIndexedDB(x.src);
+		if ($i++ == 0) addCard();
+		await delay(2000);
+	}
+	[...document.querySelectorAll('button')].forEach(b => b.disabled = false);
+}
+
+</script>

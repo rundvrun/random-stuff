@@ -5,9 +5,23 @@ import json
 import requests
 import datetime
 import re
+import redis
 
 class Server(ThreadingMixIn, BaseHTTPRequestHandler):
     sess = requests.session()
+    red_client = redis.Redis(host='127.0.0.1', port=6379, decode_responses=True)
+    @staticmethod
+    def get_json(url, ignore_redis=False):
+        is_redis = True
+        try: Server.red_client.ping()
+        except: is_redis = False
+        data = None
+        if is_redis and not ignore_redis:
+            if not (data := Server.red_client.get(url)):
+                data = Server.sess.get(url).text
+                Server.red_client.set(url, data)
+            return json.loads(data)
+        else: return Server.sess.get(url).json()
     def send_header(self, keyword, value):
         if hasattr(self, 'response_text'): self.response_text += ("%s: %s\r\n" % (keyword, value))
         super().send_header(keyword, value)
@@ -25,12 +39,10 @@ class Server(ThreadingMixIn, BaseHTTPRequestHandler):
         return
     def do_GET(self):
         if self.path == '/decks':
-            t = Server.sess.get("url-to-fetch")
-            data = json.loads(t.text)
+            data = Server.get_json("url-to-fetch")
             data = list(map(lambda z: {'name': z['name'], 'price': z['price'], 'id': z['id'], 'rarity': z['rarity'], 'setCode': z['setCode'], 'src': z['src'] }, data))
             for d in data:
-                det = Server.sess.get(f"url-to-fetch-detail")
-                det = json.loads(det.text)[0]
+                det = Server.get_json(f"url-to-fetch-detail")[0]
                 d['hp'] = det.get('hp', 0)
                 d['tcgplayer_id'] = det.get('tcgplayer_id', 0)
                 d['supertype'] = det.get('supertype', 'Unknown')
@@ -44,13 +56,11 @@ class Server(ThreadingMixIn, BaseHTTPRequestHandler):
             self.write(json.dumps(data))
             return
         if self.path == '/decks-yugi':
-            t = Server.sess.get("url-to-fetch")
-            data = json.loads(t.text)[0]
+            data = Server.get_json("url-to-fetch")[0]
             data = list(map(lambda z: {'name': z['name'], 'price': float(z['price'])*12, 'id': z['id'], 'rarity': z['rarity'], 'setCode': z['setcode'], 'supertype': z['type'], 'src': z['image_url'], 'tcgplayer_id': re.search(r'product%2F(\d+)', z['card_url']).group(1) }, data))
             for d in data:
                 if 'Monster' not in d['supertype']: continue
-                det = Server.sess.get(f'url-to-fetch-detail')
-                det = json.loads(det.text)['data'][0]
+                det = Server.get_json(f'url-to-fetch-detail')['data'][0]
                 d['hp'] = det.get('atk', 0)
                 d['subtype'] = det.get('frameType', 'Unknown')
                 d['type'] = det.get('attribute', 'Unknown')

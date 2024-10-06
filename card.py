@@ -12,17 +12,15 @@ class Server(ThreadingMixIn, BaseHTTPRequestHandler):
     red_client = redis.Redis(host='127.0.0.1', port=6379, decode_responses=True)
     @staticmethod
     def get_json(url, ignore_redis=False):
-        if ignore_redis: return tor.get(url, Server.sess).json()
+        if ignore_redis: return Server.sess.get(url).json()
         is_redis = True
         try: Server.red_client.ping()
         except: is_redis = False
-        data = None
-        if is_redis:
-            if not (data := Server.red_client.get(url)):
-                data = tor.get(url, Server.sess).text
-                Server.red_client.set(url, data)
-            return json.loads(data)
-        return tor.get(url, Server.sess).json()
+        if not is_redis: return Server.sess.get(url).json()
+        if not (data := Server.red_client.get(url)):
+            data = Server.sess.get(url).text
+            Server.red_client.set(url, data)
+        return json.loads(data)
     def send_header(self, keyword, value):
         if hasattr(self, 'response_text'): self.response_text += ("%s: %s\r\n" % (keyword, value))
         super().send_header(keyword, value)

@@ -16,9 +16,7 @@ class Server(ThreadingMixIn, BaseHTTPRequestHandler):
         try: is_redis = Server.red_client.ping()
         except: is_redis = False
         if not is_redis: return Server.sess.get(url).json()
-        if not (data := Server.red_client.get(url)):
-            data = Server.sess.get(url).text
-            Server.red_client.set(url, data)
+        if not (data := Server.red_client.get(url)): Server.red_client.set(url, data := Server.sess.get(url).text)
         return json.loads(data)
     def send_header(self, keyword, value):
         if hasattr(self, 'response_text'): self.response_text += ("%s: %s\r\n" % (keyword, value))

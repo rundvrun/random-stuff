@@ -13,8 +13,7 @@ class Server(ThreadingMixIn, BaseHTTPRequestHandler):
     @staticmethod
     def get_json(url, ignore_redis=False):
         if ignore_redis: return Server.sess.get(url).json()
-        is_redis = True
-        try: Server.red_client.ping()
+        try: is_redis = Server.red_client.ping()
         except: is_redis = False
         if not is_redis: return Server.sess.get(url).json()
         if not (data := Server.red_client.get(url)):

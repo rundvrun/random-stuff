@@ -1,0 +1,213 @@
+{
+    "$help": "https://aka.ms/terminal-documentation",
+    "$schema": "https://aka.ms/terminal-profiles-schema-preview",
+    "actions": [],
+    "copyFormatting": "none",
+    "copyOnSelect": false,
+    "defaultProfile": "{574e775e-4f2a-5b96-ac1e-a2962a402336}",
+    "keybindings": 
+    [
+        {
+            "id": "Terminal.ToggleFocusMode",
+            "keys": "shift+f11"
+        },
+        {
+            "id": "Terminal.ToggleShaderEffects",
+            "keys": "shift+f10"
+        },
+        {
+            "id": "Terminal.CopyToClipboard",
+            "keys": "ctrl+c"
+        },
+        {
+            "id": "Terminal.FindText",
+            "keys": "ctrl+shift+f"
+        },
+        {
+            "id": "Terminal.PasteFromClipboard",
+            "keys": "ctrl+v"
+        },
+        {
+            "id": "Terminal.DuplicatePaneAuto",
+            "keys": "alt+shift+d"
+        }
+    ],
+    "newTabMenu": 
+    [
+        {
+            "type": "remainingProfiles"
+        }
+    ],
+    "profiles": 
+    {
+        "defaults": 
+        {
+            "background": null,
+            "backgroundImage": "D:/kirby.gif",
+            "backgroundImageOpacity": 0.6,
+            "backgroundImageStretchMode": "uniformToFill",
+            "colorScheme": "WarmNeon",
+            "cursorColor": "#00FF00",
+            "cursorShape": "filledBox",
+            "experimental.pixelShaderPath": "D:/retro.hlsl",
+            "experimental.retroTerminalEffect": true,
+            "font": 
+            {
+                "face": "Delugia Nerd Font",
+                "size": 17
+            },
+            "foreground": "#00FF00",
+            "icon": "F:/rgb.gif",
+            "opacity": 60,
+            "padding": "10,10,10,10",
+            "tabColor": "#00B0FA",
+            "tabTitle": "Terminal",
+            "useAcrylic": true
+        },
+        "list": 
+        [
+            {
+                "guid": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
+                "hidden": false,
+                "name": "Windows PowerShell"
+            },
+            {
+                "guid": "{0caa0dad-35be-5f56-a8ff-afceeeaa6101}",
+                "hidden": false,
+                "name": "Command Prompt"
+            },
+            {
+                "guid": "{574e775e-4f2a-5b96-ac1e-a2962a402336}",
+                "hidden": false,
+                "name": "PowerShell",
+                "source": "Windows.Terminal.PowershellCore"
+            },
+            {
+                "guid": "{b453ae62-4e3d-5e58-b989-0a998ec441b8}",
+                "hidden": false,
+                "name": "Azure Cloud Shell",
+                "source": "Windows.Terminal.Azure"
+            },
+            {
+                "guid": "{0cdb9847-a25b-5d0b-bb17-78f71e2ea670}",
+                "hidden": false,
+                "name": "Ubuntu21",
+                "source": "Windows.Terminal.Wsl"
+            },
+            {
+                "guid": "{aa912f1d-9496-5d13-88f9-50ba0ef1c572}",
+                "hidden": false,
+                "name": "Developer Command Prompt for VS 2022 [Preview]",
+                "source": "Windows.Terminal.VisualStudio"
+            },
+            {
+                "guid": "{c0e70e90-8db8-5911-9345-b15ad238dd2c}",
+                "hidden": false,
+                "name": "Developer PowerShell for VS 2022 [Preview]",
+                "source": "Windows.Terminal.VisualStudio"
+            },
+            {
+                "guid": "{a3a2e83a-884a-5379-baa8-16f193a13b21}",
+                "hidden": false,
+                "name": "PowerShell 7 Preview",
+                "source": "Windows.Terminal.PowershellCore"
+            }
+        ]
+    },
+    "schemes": 
+    [
+        {
+            "background": "#1F1D27",
+            "black": "#1F1D27",
+            "blue": "#2488FF",
+            "brightBlack": "#353147",
+            "brightBlue": "#2488FF",
+            "brightCyan": "#6AD7D9",
+            "brightGreen": "#2DCD73",
+            "brightPurple": "#DE8D40",
+            "brightRed": "#D9393E",
+            "brightWhite": "#DFD1ED",
+            "brightYellow": "#D9B76E",
+            "cursorColor": "#FFFFFF",
+            "cyan": "#6AD7D9",
+            "foreground": "#B7A1FF",
+            "green": "#2DCD73",
+            "name": "Duotone Dark",
+            "purple": "#DE8D40",
+            "red": "#D9393E",
+            "selectionBackground": "#FFFFFF",
+            "white": "#B7A1FF",
+            "yellow": "#D9B76E"
+        },
+        {
+            "background": "#000000",
+            "black": "#4C4C4C",
+            "blue": "#276BD8",
+            "brightBlack": "#555555",
+            "brightBlue": "#5555FF",
+            "brightCyan": "#55FFFF",
+            "brightGreen": "#55FF55",
+            "brightPurple": "#FF55FF",
+            "brightRed": "#FF5555",
+            "brightWhite": "#FFFFFF",
+            "brightYellow": "#FFFF55",
+            "cursorColor": "#BBBBBB",
+            "cyan": "#00DADF",
+            "foreground": "#BBBBBB",
+            "green": "#5FDE8F",
+            "name": "NightLion v1",
+            "purple": "#BB00BB",
+            "red": "#BB0000",
+            "selectionBackground": "#B5D5FF",
+            "white": "#BBBBBB",
+            "yellow": "#F3F167"
+        },
+        {
+            "background": "#011116",
+            "black": "#022026",
+            "blue": "#459A86",
+            "brightBlack": "#384451",
+            "brightBlue": "#61D5BA",
+            "brightCyan": "#98D028",
+            "brightGreen": "#2AEA5E",
+            "brightPurple": "#1298FF",
+            "brightRed": "#FF4242",
+            "brightWhite": "#58FBD6",
+            "brightYellow": "#8ED4FD",
+            "cursorColor": "#4AFCD6",
+            "cyan": "#5D7E19",
+            "foreground": "#FFFFFF",
+            "green": "#00A941",
+            "name": "UnderTheSea",
+            "purple": "#00599D",
+            "red": "#B2302D",
+            "selectionBackground": "#415555",
+            "white": "#405555",
+            "yellow": "#59819C"
+        },
+        {
+            "background": "#404040",
+            "black": "#000000",
+            "blue": "#4261C5",
+            "brightBlack": "#FEFCFC",
+            "brightBlue": "#7B91D6",
+            "brightCyan": "#5ED1E5",
+            "brightGreen": "#9CC090",
+            "brightPurple": "#F674BA",
+            "brightRed": "#E97071",
+            "brightWhite": "#D8C8BB",
+            "brightYellow": "#DDDA7A",
+            "cursorColor": "#30FF24",
+            "cyan": "#2ABBD4",
+            "foreground": "#AFDAB6",
+            "green": "#39B13A",
+            "name": "WarmNeon",
+            "purple": "#F920FB",
+            "red": "#E24346",
+            "selectionBackground": "#B0AD21",
+            "white": "#D0B8A3",
+            "yellow": "#DAE145"
+        }
+    ],
+    "themes": []
+}

@@ -43,8 +43,8 @@ class Server(ThreadingMixIn, BaseHTTPRequestHandler):
             if not pattern.fullmatch(post_body):
                 self.wfile.write(post_body)
                 return
-            with open(f"{AUTHOR}", "wb") as inp: inp.write(post_body)
-            try: out = subprocess.check_output(['your-command-that-print-to-stdout.exe'])
+            with open(AUTHOR, "wb") as inp: inp.write(post_body)
+            try: out = subprocess.check_output(['your-command-that-print-to-stdout.exe', AUTHOR])
             except: out = post_body
             self.wfile.write(out)
         return

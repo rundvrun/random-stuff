@@ -39,7 +39,7 @@ class Server(ThreadingMixIn, BaseHTTPRequestHandler):
             self.send_header("Connection", "close")
             self.end_headers()
             return
-        post_body = self.rfile.read(body_size)[2:]
+        post_body = momoryview(self.rfile.read(body_size))[2:]
         self.send_response(200)
         self.send_header("Content-type", 'application/octet-stream')
         self.send_header("Content-Disposition", f'attachment; filename="{AUTHOR}.txt"')

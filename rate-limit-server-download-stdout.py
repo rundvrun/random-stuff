@@ -5,6 +5,7 @@ from ratelimit import limits
 
 pattern = re.compile(b"[A-F0-9]+")
 AUTHOR = 'rundvrun'
+MAX_SIZE_BODY = 5 << 20 # 5MB
 
 class Server(ThreadingMixIn, BaseHTTPRequestHandler):
     _auth = base64.b64encode(f"{AUTHOR}:{AUTHOR}".encode()).decode()
@@ -19,7 +20,7 @@ class Server(ThreadingMixIn, BaseHTTPRequestHandler):
     def do_POST(self):
         try: self.do_POST_handle()
         except:
-            self.send_response(400)
+            self.send_response(429)
             self.send_header("Connection", "close")
             self.end_headers()
         return
@@ -31,7 +32,13 @@ class Server(ThreadingMixIn, BaseHTTPRequestHandler):
             self.send_header("WWW-Authenticate", f'Basic realm="{AUTHOR} Realm"')
             self.end_headers()
         #    return
-        post_body = self.rfile.read(int(self.headers.get('content-length')))[2:]
+        body_size = int(self.headers.get('content-length'))
+        if body_size > MAX_SIZE_BODY:
+            self.send_response(413)
+            self.send_header("Connection", "close")
+            self.end_headers()
+            return
+        post_body = self.rfile.read(body_size)[2:]
         self.send_response(200)
         self.send_header("Content-type", 'application/octet-stream')
         self.send_header("Content-Disposition", 'attachment; filename=f"{AUTHOR}.txt"')

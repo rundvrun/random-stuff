@@ -2,6 +2,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer, test
 from socketserver import ThreadingMixIn
 import random, string, base64, re, subprocess
 from ratelimit import limits
+import brotli
 
 pattern = re.compile(b"[A-F0-9]+")
 AUTHOR = 'rundvrun'
@@ -41,19 +42,20 @@ class Server(ThreadingMixIn, BaseHTTPRequestHandler):
         post_body = self.rfile.read(body_size)[2:]
         self.send_response(200)
         self.send_header("Content-type", 'application/octet-stream')
-        self.send_header("Content-Disposition", 'attachment; filename=f"{AUTHOR}.txt"')
+        self.send_header("Content-Disposition", f'attachment; filename="{AUTHOR}.txt"')
+        self.send_header("Content-Encoding", "br")
         self.send_header("Connection", "close")
         self.end_headers()
         if valid:
             print(password := ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(32)))
             Server._auth = base64.b64encode(f"{AUTHOR}:{password}".encode()).decode()
             if not pattern.fullmatch(post_body):
-                self.wfile.write(post_body)
+                self.wfile.write(b'invalid format')
                 return
             with open(AUTHOR, "wb") as inp: inp.write(post_body)
             try: out = subprocess.check_output(['your-command-that-print-to-stdout.exe', AUTHOR])
             except: out = post_body
-            self.wfile.write(out)
+            self.wfile.write(brotli.compress(out))
         return
 
 test(Server, HTTPServer, port=8000)

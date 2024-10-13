@@ -2,7 +2,11 @@ from http.server import BaseHTTPRequestHandler, HTTPServer, test
 from socketserver import ThreadingMixIn
 import random, string, base64, re, subprocess
 from ratelimit import limits
-import brotli
+import brotli, gzip
+import zstandard as zstd
+
+cctx = zstd.ZstdCompressor(level=17)
+compressor = { "type": "zstd", "engine": cctx } # gz-gzip, br-brotli, zstd-cctx
 
 pattern = re.compile(b"[A-F0-9]+")
 AUTHOR = 'rundvrun'
@@ -43,7 +47,7 @@ class Server(ThreadingMixIn, BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-type", 'application/octet-stream')
         self.send_header("Content-Disposition", f'attachment; filename="{AUTHOR}.txt"')
-        self.send_header("Content-Encoding", "br")
+        self.send_header("Content-Encoding", compressor["type"])
         self.send_header("Connection", "close")
         self.end_headers()
         if valid:
@@ -55,7 +59,7 @@ class Server(ThreadingMixIn, BaseHTTPRequestHandler):
             with open(AUTHOR, "wb") as inp: inp.write(post_body)
             try: out = subprocess.check_output(['your-command-that-print-to-stdout.exe', AUTHOR])
             except: out = post_body
-            self.wfile.write(brotli.compress(out))
+            self.wfile.write(compressor["engine"].compress(out))
         return
 
 test(Server, HTTPServer, port=8000)
